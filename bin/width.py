@@ -87,6 +87,23 @@ def process_pdf_with_iterations(pdf_path, threshold=1, size=2):
     return iteration_counts, darkness_values
 
 
+def find_biggest_change(darkness_values):
+    """Find the biggest change in darkness values"""
+    if len(darkness_values) < 2:
+        return 0, 0
+    
+    max_change = 0
+    max_change_index = 0
+    
+    for i in range(1, len(darkness_values)):
+        change = abs(darkness_values[i] - darkness_values[i-1])
+        if change > max_change:
+            max_change = change
+            max_change_index = i
+    
+    return max_change_index, max_change
+
+
 def generate_graph(iteration_counts, darkness_values):
     """Generate graph with iterations on x-axis and darkness on y-axis"""
     plt.figure(figsize=(10, 6))
@@ -116,6 +133,10 @@ def main():
     iteration_counts, darkness_values = process_pdf_with_iterations(
         args.pdf_path, threshold=args.threshold, size=args.size
     )
+
+    # Find biggest change
+    max_change_index, max_change = find_biggest_change(darkness_values)
+    print(f"Biggest change: {max_change:.4f} at iteration {max_change_index}")
 
     # Generate graph
     generate_graph(iteration_counts, darkness_values)
