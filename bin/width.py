@@ -105,19 +105,34 @@ def find_biggest_change(darkness_values):
 
 
 def generate_graph(iteration_counts, darkness_values, output_dir, pdf_filename):
-    """Generate graph with iterations on x-axis and darkness on y-axis"""
     base_name = os.path.splitext(pdf_filename)[0]
     filename = f"{base_name}_graph.png"
     filepath = os.path.join(output_dir, filename)
 
     plt.figure(figsize=(10, 6))
     plt.plot(iteration_counts, darkness_values, marker="o")
+
+    # Find biggest change and circle it in red
+    max_change_index, max_change = find_biggest_change(darkness_values)
+    if max_change_index > 0:
+        plt.scatter(
+            iteration_counts[max_change_index],
+            darkness_values[max_change_index],
+            color="red",
+            s=100,
+            zorder=5,
+            label=f"Biggest change: {max_change:.4f}",
+        )
+
     plt.xlabel("Iteration Count")
     plt.ylabel("Darkness")
     plt.title("Darkness vs Iteration Count")
     plt.grid(True)
+    plt.legend()
     plt.savefig(filepath)
     plt.close()
+
+    print(f"Graph saved as {filepath}")
 
 
 def main():
@@ -126,7 +141,7 @@ def main():
     parser.add_argument("--output-dir", "-o", default=".", help="Directory to save output images")
     parser.add_argument("--size", type=int, default=2, help="Kernel size for erosion")
     parser.add_argument("--iterations", type=int, default=1, help="iterations for erosion")
-    parser.add_argument("--threshold", type=float, default=5.0, help="Darkness threshold")
+    parser.add_argument("--threshold", type=float, default=1.0, help="Darkness threshold")
 
     args = parser.parse_args()
 
@@ -144,8 +159,6 @@ def main():
 
     # Generate graph
     generate_graph(iteration_counts, darkness_values, args.output_dir, pdf_filename)
-
-    print(f"Graph saved as 'darkness_iterations.png'")
 
     # Also save the final processed image
     pages = pdf_to_image(args.pdf_path)
