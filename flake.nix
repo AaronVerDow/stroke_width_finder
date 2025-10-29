@@ -9,17 +9,18 @@
       let
         pkgs = import nixpkgs { inherit system; };
         pythonEnv = pkgs.python3.withPackages (ps: with ps; [
-          docker
+          pdf2image
+          pytesseract
+          opencv4
+          numpy
         ]);
       in {
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
-            gnupg
           ];
           shellHook = ''
             export PATH="${pythonEnv}/bin:$PATH"
             export PATH="${self.outPath}/bin:$PATH"
-            export PATH="${self.outPath}/src/auto_deps:$PATH"
           '';
         };
       });
