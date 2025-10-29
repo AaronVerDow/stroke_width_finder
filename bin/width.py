@@ -8,7 +8,7 @@ from pdf2image import convert_from_path
 from PIL import Image
 import matplotlib.pyplot as plt
 
-dpi = 800
+dpi = 1600
 
 
 def pdf_to_image(pdf_path):
@@ -121,12 +121,12 @@ def generate_graph(iteration_counts, darkness_values, output_dir, pdf_filename):
             color="red",
             s=100,
             zorder=5,
-            label=f"Biggest change: {max_change:.4f}",
+            label=f"Max change at iteration {iteration_counts[max_change_index]}",
         )
 
     plt.xlabel("Iteration Count")
     plt.ylabel("Darkness")
-    plt.title("Darkness vs Iteration Count")
+    plt.title(f"Darkness vs Iteration Count: {base_name}")
     plt.grid(True)
     plt.legend()
     plt.savefig(filepath)
