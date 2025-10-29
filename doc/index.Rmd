@@ -1,0 +1,16 @@
+---
+classoption: [12pt]
+title: "Automated Dependency Conflict Resolution"
+subtitle: "`r system('git rev-parse --short HEAD')`"
+date: "`r Sys.Date()`"
+author: "Aaron VerDow"
+documentclass: article
+output: 
+  bookdown::pdf_book:
+    pandoc_args: --listings
+    keep_tex: true
+    toc: true
+    number_sections: true
+    includes:
+      in_header: ./preamble.tex
+---
