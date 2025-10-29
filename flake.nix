@@ -13,6 +13,7 @@
           pytesseract
           opencv4
           numpy
+          matplotlib
         ]);
       in {
         devShells.default = pkgs.mkShell {

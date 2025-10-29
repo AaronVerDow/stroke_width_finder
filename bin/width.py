@@ -6,6 +6,7 @@ import cv2
 import numpy as np
 from pdf2image import convert_from_path
 from PIL import Image
+import matplotlib.pyplot as plt
 
 dpi = 800
 
@@ -56,28 +57,77 @@ def save_images(images, output_dir, pdf_filename):
         print(f"Saved: {filepath}")
 
 
+def process_pdf_with_iterations(pdf_path, threshold=1, size=2):
+    darkness_values = []
+    iteration_counts = []
+
+    pages = pdf_to_image(pdf_path)
+    page = pages[0]
+
+    # Process with increasing iterations
+    iterations = 1
+    while True:
+        # Apply processing
+        processed_page = clamp(page)
+        simplified_page = simplify(processed_page, size=size, iterations=iterations)
+
+        # Quantify darkness
+        darkness = quantify_darkness(simplified_page)
+
+        darkness_values.append(darkness)
+        iteration_counts.append(iterations)
+
+        print(f"Iterations: {iterations}, Darkness: {darkness:.4f}")
+
+        if darkness <= threshold:
+            break
+
+        iterations += 1
+
+    return iteration_counts, darkness_values
+
+
+def generate_graph(iteration_counts, darkness_values):
+    """Generate graph with iterations on x-axis and darkness on y-axis"""
+    plt.figure(figsize=(10, 6))
+    plt.plot(iteration_counts, darkness_values, marker="o")
+    plt.xlabel("Iteration Count")
+    plt.ylabel("Darkness")
+    plt.title("Darkness vs Iteration Count")
+    plt.grid(True)
+    plt.savefig("darkness_iterations.png")
+    plt.close()
+
+
 def main():
     parser = argparse.ArgumentParser(description="Check line width")
     parser.add_argument("pdf_path", help="Path to the input PDF file")
     parser.add_argument("--output-dir", "-o", default=".", help="Directory to save output images")
     parser.add_argument("--size", type=int, default=2, help="Kernel size for erosion")
     parser.add_argument("--iterations", type=int, default=1, help="iterations for erosion")
+    parser.add_argument("--threshold", type=float, default=5.0, help="Darkness threshold")
 
     args = parser.parse_args()
 
     # Get the PDF filename for use in output naming
     pdf_filename = os.path.basename(args.pdf_path)
 
-    pages = pdf_to_image(args.pdf_path)
+    # Process PDF with iterations until threshold is met
+    iteration_counts, darkness_values = process_pdf_with_iterations(
+        args.pdf_path, threshold=args.threshold, size=args.size
+    )
 
+    # Generate graph
+    generate_graph(iteration_counts, darkness_values)
+
+    print(f"Graph saved as 'darkness_iterations.png'")
+
+    # Also save the final processed image
+    pages = pdf_to_image(args.pdf_path)
     page = pages[0]
 
     page = clamp(page)
-    page = simplify(page, args.size, iterations=args.iterations)
-
-    # Quantify darkness for each page
-    darkness = quantify_darkness(page)
-    print(f"Darkness score: {darkness:.4f}")
+    page = simplify(page, args.size, iterations=iteration_counts[-1])
 
     save_images([page], args.output_dir, pdf_filename)
 
