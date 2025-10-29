@@ -13,7 +13,3 @@ This is an experimental attempt to use software to quantify the stroke width of 
 * Graph the total area of written text as the erosion/dilation amount is increased.
 * Calculate the steepest point of the resulting graph. This should be the point where the most area disappeared after the erosion, which should correlate to the line width.
 * By comparing these measurements to preferred samples, it should be possible to choose a target ratio and generate unique line guides for each pen.
-
-## Tests
-
-Erode/dilute doesn't work as expected. As erode size increases more area can be introduced. A new method to shrink the text will be needed.
