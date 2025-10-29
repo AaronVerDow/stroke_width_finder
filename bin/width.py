@@ -18,7 +18,8 @@ def clamp(image, threshold=128):
     if image.mode != "L":
         image = image.convert("L")
 
-    return image.point(lambda x: 0 if x < threshold else 255, mode="1")
+    # image.point(lambda x: 0 if x < threshold else 255, mode="1")
+    return image
 
 
 def simplify(image, size=2, iterations=1):
@@ -32,6 +33,15 @@ def simplify(image, size=2, iterations=1):
     array = cv2.erode(array, kernel, iterations=iterations)
 
     return Image.fromarray(array)
+
+
+def quantify_darkness(image):
+    if image.mode != "L":
+        image = image.convert("L")
+
+    array = np.array(image)
+
+    return 255 - np.mean(array)
 
 
 def save_images(images, output_dir, pdf_filename):
@@ -60,12 +70,16 @@ def main():
 
     pages = pdf_to_image(args.pdf_path)
 
-    processed_pages = []
-    for page in pages:
-        processed_page = simplify(page, args.size, iterations=args.iterations)
-        processed_pages.append(processed_page)
+    page = pages[0]
 
-    save_images(processed_pages, args.output_dir, pdf_filename)
+    page = clamp(page)
+    page = simplify(page, args.size, iterations=args.iterations)
+
+    # Quantify darkness for each page
+    darkness = quantify_darkness(page)
+    print(f"Darkness score: {darkness:.4f}")
+
+    save_images([page], args.output_dir, pdf_filename)
 
 
 if __name__ == "__main__":
