@@ -21,14 +21,15 @@ def clamp(image, threshold=128):
     return image.point(lambda x: 0 if x < threshold else 255, mode="1")
 
 
-def erode_image(image, kernel_size=2):
+def simplify(image, kernel_size=2):
     img_array = np.array(image)
 
     kernel = np.ones((kernel_size, kernel_size), np.uint8)
 
     eroded_array = cv2.erode(img_array, kernel, iterations=1)
+    dilated_array = cv2.dilate(eroded_array, kernel, iterations=1)
 
-    return Image.fromarray(eroded_array)
+    return Image.fromarray(dilated_array)
 
 
 def save_images(images, output_dir, pdf_filename):
@@ -60,7 +61,7 @@ def main():
 
     processed_pages = []
     for page in pages:
-        processed_page = erode_image(page, args.erode)
+        processed_page = simplify(page, args.erode)
         processed_pages.append(processed_page)
 
     save_images(processed_pages, args.output_dir, pdf_filename)
