@@ -2,6 +2,8 @@
 
 import argparse
 import os
+import cv2
+import numpy as np
 from pdf2image import convert_from_path
 from PIL import Image
 
@@ -17,6 +19,16 @@ def clamp(image, threshold=128):
         image = image.convert("L")
 
     return image.point(lambda x: 0 if x < threshold else 255, mode="1")
+
+
+def erode_image(image, kernel_size=2):
+    img_array = np.array(image)
+
+    kernel = np.ones((kernel_size, kernel_size), np.uint8)
+
+    eroded_array = cv2.erode(img_array, kernel, iterations=1)
+
+    return Image.fromarray(eroded_array)
 
 
 def save_images(images, output_dir, pdf_filename):
@@ -37,6 +49,7 @@ def main():
     parser.add_argument(
         "--output-dir", "-o", default=".", help="Directory to save output images (default: current directory)"
     )
+    parser.add_argument("--erode", type=int, default=2, help="Kernel size for erosion (default: 2)")
 
     args = parser.parse_args()
 
@@ -47,7 +60,7 @@ def main():
 
     processed_pages = []
     for page in pages:
-        processed_page = clamp(page)
+        processed_page = erode_image(page, args.erode)
         processed_pages.append(processed_page)
 
     save_images(processed_pages, args.output_dir, pdf_filename)
