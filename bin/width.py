@@ -7,7 +7,7 @@ import numpy as np
 from pdf2image import convert_from_path
 from PIL import Image
 
-dpi = 200
+dpi = 800
 
 
 def pdf_to_image(pdf_path):
@@ -21,15 +21,17 @@ def clamp(image, threshold=128):
     return image.point(lambda x: 0 if x < threshold else 255, mode="1")
 
 
-def simplify(image, kernel_size=2):
-    img_array = np.array(image)
+def simplify(image, size=2, iterations=1):
+    array = np.array(image)
 
-    kernel = np.ones((kernel_size, kernel_size), np.uint8)
+    kernel = np.ones((size, size), np.uint8)
 
-    eroded_array = cv2.erode(img_array, kernel, iterations=1)
-    dilated_array = cv2.dilate(eroded_array, kernel, iterations=1)
+    # for i in range(passes):
+    array = cv2.dilate(array, kernel, iterations=iterations)
+    # for i in range(passes):
+    array = cv2.erode(array, kernel, iterations=iterations)
 
-    return Image.fromarray(dilated_array)
+    return Image.fromarray(array)
 
 
 def save_images(images, output_dir, pdf_filename):
@@ -47,10 +49,9 @@ def save_images(images, output_dir, pdf_filename):
 def main():
     parser = argparse.ArgumentParser(description="Check line width")
     parser.add_argument("pdf_path", help="Path to the input PDF file")
-    parser.add_argument(
-        "--output-dir", "-o", default=".", help="Directory to save output images (default: current directory)"
-    )
-    parser.add_argument("--erode", type=int, default=2, help="Kernel size for erosion (default: 2)")
+    parser.add_argument("--output-dir", "-o", default=".", help="Directory to save output images")
+    parser.add_argument("--size", type=int, default=2, help="Kernel size for erosion")
+    parser.add_argument("--iterations", type=int, default=1, help="iterations for erosion")
 
     args = parser.parse_args()
 
@@ -61,7 +62,7 @@ def main():
 
     processed_pages = []
     for page in pages:
-        processed_page = simplify(page, args.erode)
+        processed_page = simplify(page, args.size, iterations=args.iterations)
         processed_pages.append(processed_page)
 
     save_images(processed_pages, args.output_dir, pdf_filename)
