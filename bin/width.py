@@ -91,28 +91,32 @@ def find_biggest_change(darkness_values):
     """Find the biggest change in darkness values"""
     if len(darkness_values) < 2:
         return 0, 0
-    
+
     max_change = 0
     max_change_index = 0
-    
+
     for i in range(1, len(darkness_values)):
-        change = abs(darkness_values[i] - darkness_values[i-1])
+        change = abs(darkness_values[i] - darkness_values[i - 1])
         if change > max_change:
             max_change = change
             max_change_index = i
-    
+
     return max_change_index, max_change
 
 
-def generate_graph(iteration_counts, darkness_values):
+def generate_graph(iteration_counts, darkness_values, output_dir, pdf_filename):
     """Generate graph with iterations on x-axis and darkness on y-axis"""
+    base_name = os.path.splitext(pdf_filename)[0]
+    filename = f"{base_name}_graph.png"
+    filepath = os.path.join(output_dir, filename)
+
     plt.figure(figsize=(10, 6))
     plt.plot(iteration_counts, darkness_values, marker="o")
     plt.xlabel("Iteration Count")
     plt.ylabel("Darkness")
     plt.title("Darkness vs Iteration Count")
     plt.grid(True)
-    plt.savefig("darkness_iterations.png")
+    plt.savefig(filepath)
     plt.close()
 
 
@@ -139,7 +143,7 @@ def main():
     print(f"Biggest change: {max_change:.4f} at iteration {max_change_index}")
 
     # Generate graph
-    generate_graph(iteration_counts, darkness_values)
+    generate_graph(iteration_counts, darkness_values, args.output_dir, pdf_filename)
 
     print(f"Graph saved as 'darkness_iterations.png'")
 
@@ -150,7 +154,7 @@ def main():
     page = clamp(page)
     page = simplify(page, args.size, iterations=iteration_counts[-1])
 
-    save_images([page], args.output_dir, pdf_filename)
+    # save_images([page], args.output_dir, pdf_filename)
 
 
 if __name__ == "__main__":
